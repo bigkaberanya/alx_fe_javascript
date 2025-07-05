@@ -39,7 +39,7 @@ input[type="text"], select {
 
 button {
   padding: 10px 20px;
-  margin: 5px 0;
+  margin: 5px 5px 5px 0;
   background-color: #3498db;
   color: white;
   border: none;
