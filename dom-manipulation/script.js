@@ -1,17 +1,18 @@
-let quotes = [];
+const quotes = [];
+
 const quoteDisplay = document.getElementById('quoteDisplay');
 const categoryFilter = document.getElementById('categoryFilter');
 
 function loadQuotes() {
   const storedQuotes = localStorage.getItem('quotes');
   if (storedQuotes) {
-    quotes = JSON.parse(storedQuotes);
+    quotes.push(...JSON.parse(storedQuotes));
   } else {
-    quotes = [
+    quotes.push(
       { text: "Stay hungry, stay foolish.", category: "Inspiration" },
       { text: "Life is what happens when you're busy making other plans.", category: "Life" },
       { text: "The only limit to our realization of tomorrow is our doubts today.", category: "Motivation" }
-    ];
+    );
     saveQuotes();
   }
   populateCategories();
@@ -149,21 +150,37 @@ async function syncQuotes() {
       const localQuote = quotes.find(q => q.text === serverQuote.text);
       if (!localQuote) {
         quotes.push(serverQuote);
-            } else if (localQuote.category !== serverQuote.category) {
-              // Handle conflict if needed (currently just flagging)
-              conflictDetected = true;
-            }
-          });
-      
-          if (conflictDetected) {
-            alert('Some quotes had category conflicts and were not updated.');
-          } else {
-            saveQuotes();
-            populateCategories();
-            displayRandomQuote();
-            alert('Quotes synchronized successfully!');
-          }
-        } catch (error) {
-          alert('Failed to sync quotes with server!');
-        }
+      } else if (localQuote.category !== serverQuote.category) {
+        const index = quotes.findIndex(q => q.text === serverQuote.text);
+        quotes[index] = serverQuote;
+        conflictDetected = true;
       }
+    });
+
+    await postQuotesToServer(quotes);
+
+    if (conflictDetected) {
+      alert('⚠️ Sync conflict resolved: Server data has replaced local data for some quotes.');
+      console.log('Conflicts resolved with server data.');
+    } else {
+      alert('✅ Quotes synced successfully with server.');
+      console.log('Synced without conflicts.');
+    }
+
+    saveQuotes();
+    populateCategories();
+    displayRandomQuote();
+  } catch (error) {
+    console.error('Error syncing with server:', error);
+    alert('❌ Failed to sync with server.');
+  }
+}
+
+// Periodic sync every 60 seconds
+setInterval(syncQuotes, 60000);
+
+document.getElementById('newQuote').addEventListener('click', displayRandomQuote);
+document.getElementById('syncBtn').addEventListener('click', syncQuotes);
+
+loadQuotes();
+syncQuotes();
