@@ -40,7 +40,9 @@ function displayRandomQuote() {
   const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
   quoteDisplay.innerHTML = `<p>${filteredQuotes[randomIndex].text}</p><small>— ${filteredQuotes[randomIndex].category}</small>`;
 }
-
+function showRandomQuote() {
+  displayRandomQuote();
+}
 function addQuote() {
   const text = document.getElementById('newQuoteText').value.trim();
   const category = document.getElementById('newQuoteCategory').value.trim();
